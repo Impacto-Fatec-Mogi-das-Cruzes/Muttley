@@ -30,13 +30,7 @@ public class StudentController {
 
     @PostMapping
     public ResponseEntity<Student> create(@RequestBody @Valid StudentDTO dto) {
-        Student student = new Student(dto);
-        return ResponseEntity.status(201).body(service.save(student));
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Student>> findAll() {
-        return ResponseEntity.ok(service.findAll());
+        return ResponseEntity.status(201).body(service.save(dto));
     }
 
     @GetMapping("/{id}")

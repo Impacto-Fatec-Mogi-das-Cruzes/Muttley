@@ -2,23 +2,34 @@ package com.fatecmc.muttley.student;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fatecmc.muttley.student.dto.StudentDTO;
 import com.fatecmc.muttley.student.dto.StudentListDTO;
-
+import com.fatecmc.muttley.user.User;
+import com.fatecmc.muttley.user.dto.UserRole;
 
 @Service
+@Transactional
 public class StudentService {
-    @Autowired 
-    private final StudentRepository repository;
 
-    public StudentService(StudentRepository repository) {
+    private final StudentRepository repository;
+    private final PasswordEncoder passwordEncoder;
+
+    public StudentService(StudentRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public Student save(Student student) {
+    public Student save(StudentDTO dto) {
+        User user = new User();
+        user.setEmail(dto.email());
+        user.setPassword(passwordEncoder.encode(dto.ra()));
+        user.setRole(UserRole.STUDENT);
+
+        Student student = new Student(dto, user);
         return repository.save(student);
     }
 
@@ -35,10 +46,12 @@ public class StudentService {
         Student student = findById(id);
 
         student.setName(dto.name());
+        student.setRa(dto.ra());
         student.setGithub(dto.github());
         student.setLinkedin(dto.linkedin());
         student.setCourse(dto.course());
-        student.setRa(dto.ra());
+
+        student.getUser().setEmail(dto.email());
 
         return repository.save(student);
     }
@@ -50,15 +63,15 @@ public class StudentService {
 
     public List<StudentListDTO> list(String search) {
         List<Student> students = repository
-            .findByRaContainingIgnoreCase(search);
+                .findByRaContainingIgnoreCase(search);
 
         return students.stream()
-            .map(s -> new StudentListDTO(
-                s.getId(),
-                s.getName(),
-                s.getRa(),
-                s.getCourse()
-            ))
-            .toList();
+                .map(s -> new StudentListDTO(
+                        s.getId(),
+                        s.getName(),
+                        s.getRa(),
+                        s.getCourse()
+                ))
+                .toList();
     }
 }

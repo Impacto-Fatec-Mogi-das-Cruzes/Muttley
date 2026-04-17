@@ -1,5 +1,6 @@
 package com.fatecmc.muttley.student.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record StudentDTO(
@@ -14,6 +15,10 @@ public record StudentDTO(
     String linkedin,
 
     @NotBlank(message = "Course is required")
-    String course
+    String course,
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email")
+    String email
 
 ) {}
