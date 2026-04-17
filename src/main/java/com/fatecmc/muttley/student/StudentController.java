@@ -1,6 +1,5 @@
 package com.fatecmc.muttley.student;
 
-import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fatecmc.muttley.student.dto.StudentDTO;
-import com.fatecmc.muttley.student.dto.StudentListDTO;
+import com.fatecmc.muttley.student.dto.StudentListResponseDTO;
 
 import jakarta.validation.Valid;
 
@@ -50,7 +49,9 @@ public class StudentController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<StudentListDTO>> list(@RequestParam String search) {
-        return ResponseEntity.ok(service.list(search));
+    public ResponseEntity<StudentListResponseDTO> list(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long courseId) {
+        return ResponseEntity.ok(service.list(search, courseId));
     }
 }

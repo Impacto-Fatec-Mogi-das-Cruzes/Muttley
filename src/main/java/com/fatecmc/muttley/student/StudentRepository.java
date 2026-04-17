@@ -12,4 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
     List<Student> findByRaContainingIgnoreCase(String ra);
+
+    List<Student> findByCourseId(Long courseId);
+
+    List<Student> findByRaContainingIgnoreCaseAndCourseId(String ra, Long courseId);
 }

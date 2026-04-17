@@ -6,8 +6,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fatecmc.muttley.course.Course;
+import com.fatecmc.muttley.course.CourseService;
 import com.fatecmc.muttley.student.dto.StudentDTO;
 import com.fatecmc.muttley.student.dto.StudentListDTO;
+import com.fatecmc.muttley.student.dto.StudentListResponseDTO;
 import com.fatecmc.muttley.user.User;
 import com.fatecmc.muttley.user.dto.UserRole;
 
@@ -17,10 +20,12 @@ public class StudentService {
 
     private final StudentRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final CourseService courseService;
 
-    public StudentService(StudentRepository repository, PasswordEncoder passwordEncoder) {
+    public StudentService(StudentRepository repository, PasswordEncoder passwordEncoder, CourseService courseService) {
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
+        this.courseService = courseService;
     }
 
     public Student save(StudentDTO dto) {
@@ -29,7 +34,9 @@ public class StudentService {
         user.setPassword(passwordEncoder.encode(dto.ra()));
         user.setRole(UserRole.STUDENT);
 
-        Student student = new Student(dto, user);
+        Course course = courseService.findById(dto.courseId());
+
+        Student student = new Student(dto, user, course);
         return repository.save(student);
     }
 
@@ -44,13 +51,13 @@ public class StudentService {
 
     public Student update(Long id, StudentDTO dto) {
         Student student = findById(id);
+        Course course = courseService.findById(dto.courseId());
 
         student.setName(dto.name());
         student.setRa(dto.ra());
         student.setGithub(dto.github());
         student.setLinkedin(dto.linkedin());
-        student.setCourse(dto.course());
-
+        student.setCourse(course);
         student.getUser().setEmail(dto.email());
 
         return repository.save(student);
@@ -61,17 +68,28 @@ public class StudentService {
         repository.delete(student);
     }
 
-    public List<StudentListDTO> list(String search) {
-        List<Student> students = repository
-                .findByRaContainingIgnoreCase(search);
+    public StudentListResponseDTO list(String search, Long courseId) {
+        List<Student> students;
 
-        return students.stream()
-                .map(s -> new StudentListDTO(
-                        s.getId(),
-                        s.getName(),
-                        s.getRa(),
-                        s.getCourse()
-                ))
-                .toList();
+        if (search != null && courseId != null) {
+            students = repository.findByRaContainingIgnoreCaseAndCourseId(search, courseId);
+        } else if (search != null) {
+            students = repository.findByRaContainingIgnoreCase(search);
+        } else if (courseId != null) {
+            students = repository.findByCourseId(courseId);
+        } else {
+            students = repository.findAll();
+        }
+
+        List<StudentListDTO> studentDTOs = students.stream()
+            .map(s -> new StudentListDTO(
+                    s.getId(),
+                    s.getName(),
+                    s.getRa(),
+                    s.getCourse().getAbbreviation()
+            ))
+            .toList();
+
+    return new StudentListResponseDTO(repository.count(), studentDTOs);
     }
 }
