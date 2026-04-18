@@ -32,9 +32,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = recoverToken(request);
-        System.out.println("TOKEN: " + token);
-        System.out.println("URI: " + request.getRequestURI());
-        System.out.println("METHOD: " + request.getMethod());
 
         if (token != null) {
             String email = tokenService.validateToken(token);
