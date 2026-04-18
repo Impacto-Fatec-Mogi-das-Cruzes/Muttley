@@ -4,12 +4,14 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fatecmc.muttley.student.Student;
+import com.fatecmc.muttley.teacher.Teacher;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -41,4 +43,7 @@ public class Course {
     @JsonIgnore
     private List<Student> students;
 
+    @ManyToMany(mappedBy = "courses")
+    @JsonIgnore
+    private List<Teacher> teachers;
 }
